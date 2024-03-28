@@ -1,0 +1,82 @@
+# EC2に関する手順
+# ---------------------
+・EC2(Amazon Linux 2023)
+　1.EC2の起動
+  2.SSH接続
+  3.pythonのインストール
+  4.仮想環境にライブラリインストール＆zip化
+    
+    # Pythonのインストール
+    # ---------------------
+    # 以下の手順では、Amazon Linux 2023にPython3をインストールする方法を示す。
+
+    #開発ツールのインストール
+    sudo yum groupinstall "Development Tools" -y
+    sudo yum install openssl-devel bzip2-devel libffi-devel -y
+
+    #tmpディレクトリの作成
+    cd /tmp
+    #python3.12のダウンロード
+    wget -c https://www.python.org/ftp/python/3.12.2/Python-3.12.2.tgz
+    
+    #ダウンロードしたアーカイブを解凍し、ビルドする。
+    tar -xzf Python-3.12.2.tgz
+    cd Python-3.12.2
+    ./configure --enable-optimizations
+    make -j $(nproc)
+    sudo make altinstall
+
+    #エイリアスの作成
+    echo 'alias python=python3' >> ~/.bash_profile
+    #更新を反映
+    source ~/.bash_profile
+
+    # pipのインストール
+    # ---------------------
+    #インストールコマンド
+    python3 -m ensurepip --upgrade
+
+    #バージョン確認
+    python3 -m pip --version
+
+    #pipのbinファイルのパスをexportする（pipのbinファイルへのパスを記載）
+    export PATH=$PATH:/pipのbinまでのパス
+
+    #pipでもpip3が使えるようにシンボリックリンクを作成
+    sudo ln -s ~/.local/bin/pip3 ~/.local/bin/pip
+
+    # lambdaのレイヤーに登録するライブラリのzipファイルを作成
+    # ---------------------
+    # python3.12の仮想環境を作成し、ライブラリをインストールする。
+    # インストールしたライブラリをzip化する。（zipをLambdaレイヤーに登録する。）
+
+    # 仮想環境の作成
+    python3.12 -m venv ~/venv/openai-img-gene
+
+    #仮想環境のアクティベート
+    source ~/venv/openai-img-gene/bin/activate
+
+    # requirements.txt　に記載のライブラリをファイルにインストール
+    pip install -r requirements.txt
+
+    # インストールしたライブラリをzip化
+    pip install -r
+
+    
+# Lambdaに関する手順
+# ---------------------
+・Lambda関数の作成
+・IAMロールに権限付与
+・環境変数の追加（openaiのAPIキー）
+
+
+#参考資料
+Lambdaで「invalid ELF header」エラーが出たときの対処法
+https://zenn.dev/koyomi/articles/bcb5f2e0c524a6
+
+https://i2bskn.com/entry/python_install_to_amazon_linux_2023
+
+https://note.com/gorojy/n/n5e37bf9df9b0
+
+https://stackoverflow.com/questions/77444332/openai-python-package-error-chatcompletion-object-is-not-subscriptable
+
