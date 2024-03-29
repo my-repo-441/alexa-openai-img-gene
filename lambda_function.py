@@ -105,14 +105,13 @@ class ChatGPTImageGeneIntentHandler(AbstractRequestHandler):
         image_url = response.data[0].url
         print(image_url)
         
-        # URLとプロンプトの内容を含むメッセージの組み立て
-        message = {
+        # SNSメッセージの組み立てとパブリッシュ
+        message_to_publish = {
             "Image URL": image_url,
             "Prompt": prompt_img
         }
         
-        # JSON形式にエンコード
-        message_json = json.dumps(message)
+        message_json_to_publish = json.dumps(message_to_publish, ensure_ascii=False)
             
         # SNSクライアントの作成
         sns_client = boto3.client('sns')
@@ -123,7 +122,7 @@ class ChatGPTImageGeneIntentHandler(AbstractRequestHandler):
         # SNSトピックにメッセージをパブリッシュ
         response = sns_client.publish(
             TopicArn=topic_arn,
-            Message=message_json,
+            Message=message_json_to_publish,
             Subject='Generated Image URL'
         )
 
