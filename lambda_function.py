@@ -19,6 +19,7 @@ import openai
 import requests
 from io import StringIO
 import boto3
+import json
 
 openai_api_key = os.getenv('OPENAI_API_KEY')
 
@@ -83,7 +84,7 @@ class ChatGPTImageGeneIntentHandler(AbstractRequestHandler):
         ]
 
         res=openai.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4-0125-preview",
             messages=messages,
             max_tokens = 500
         )
@@ -103,6 +104,15 @@ class ChatGPTImageGeneIntentHandler(AbstractRequestHandler):
         
         image_url = response.data[0].url
         print(image_url)
+        
+        # URLとプロンプトの内容を含むメッセージの組み立て
+        message = {
+            "Image URL": image_url,
+            "Prompt": prompt_img
+        }
+        
+        # JSON形式にエンコード
+        message_json = json.dumps(message)
             
         # SNSクライアントの作成
         sns_client = boto3.client('sns')
@@ -113,7 +123,7 @@ class ChatGPTImageGeneIntentHandler(AbstractRequestHandler):
         # SNSトピックにメッセージをパブリッシュ
         response = sns_client.publish(
             TopicArn=topic_arn,
-            Message=image_url,
+            Message=message_json,
             Subject='Generated Image URL'
         )
 
